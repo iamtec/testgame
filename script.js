@@ -1,5 +1,4 @@
 const dino = document.getElementById('dino');
-const cactus = document.getElementById('cactus');
 const scoreElement = document.getElementById('score');
 const gameOverElement = document.getElementById('game-over');
 
@@ -73,7 +72,7 @@ function jump() {
         playJumpSound();
         dino.style.animation = 'none'; // Reset animation
         dino.offsetHeight; // Trigger reflow
-        dino.style.animation = `jump 0.8s cubic-bezier(0.4, 0, 0.2, 1)`;
+        dino.style.animation = `jumpAndSpin 0.8s cubic-bezier(0.4, 0, 0.2, 1)`;
         dino.style.setProperty('--jump-height', `-${jumpPower}px`);
 
         setTimeout(() => {
@@ -88,13 +87,64 @@ function jump() {
 class CactusManager {
     constructor() {
         this.cacti = [];
-        this.minDistance = 300; // Minimum distance between cacti
-        this.spawnChance = 0.02; // 2% chance to spawn per frame
+        this.minDistance = 300;
+        this.spawnChance = 0.02;
+        this.gameSpeed = 8;
     }
 
     createCactus() {
         const cactus = document.createElement('div');
         cactus.className = 'cactus';
+        
+        // Randomly choose cactus variation
+        const variation = Math.floor(Math.random() * 4); // 0-3 variations
+        const height = 40 + Math.random() * 20; // Random height between 40-60px
+        
+        // Base SVG with random height
+        const svg = `
+            <svg width="30" height="${height}" viewBox="0 0 30 ${height}">
+                <g fill="#535353">
+                    <!-- Main stem -->
+                    <rect x="12" y="0" width="6" height="${height}"/>
+        `;
+
+        // Different variations of branches
+        const variations = {
+            0: `
+                <!-- Single right branch -->
+                <rect x="18" y="${height * 0.4}" width="10" height="6"/>
+                <rect x="22" y="${height * 0.4}" width="6" height="15"/>
+            `,
+            1: `
+                <!-- Single left branch -->
+                <rect x="2" y="${height * 0.3}" width="10" height="6"/>
+                <rect x="2" y="${height * 0.3}" width="6" height="15"/>
+            `,
+            2: `
+                <!-- Double branches -->
+                <rect x="2" y="${height * 0.4}" width="10" height="6"/>
+                <rect x="2" y="${height * 0.4}" width="6" height="12"/>
+                <rect x="18" y="${height * 0.6}" width="10" height="6"/>
+                <rect x="22" y="${height * 0.6}" width="6" height="12"/>
+            `,
+            3: `
+                <!-- Triple branches -->
+                <rect x="2" y="${height * 0.3}" width="10" height="6"/>
+                <rect x="2" y="${height * 0.3}" width="6" height="12"/>
+                <rect x="18" y="${height * 0.5}" width="10" height="6"/>
+                <rect x="22" y="${height * 0.5}" width="6" height="12"/>
+                <rect x="2" y="${height * 0.7}" width="10" height="6"/>
+                <rect x="2" y="${height * 0.7}" width="6" height="12"/>
+            `
+        };
+
+        cactus.innerHTML = `
+            ${svg}
+                ${variations[variation]}
+            </g>
+            </svg>
+        `;
+        
         document.getElementById('game').appendChild(cactus);
         return {
             element: cactus,
@@ -116,15 +166,22 @@ class CactusManager {
         // Update existing cacti
         for (let i = this.cacti.length - 1; i >= 0; i--) {
             const cactus = this.cacti[i];
-            cactus.position -= 8;
-            cactus.element.style.right = `${600 - cactus.position}px`;
+            cactus.position -= this.gameSpeed;
+
+            // Make sure the position is updated
+            if (cactus.element) {
+                cactus.element.style.right = `${600 - cactus.position}px`;
+            }
 
             // Remove if off screen
             if (cactus.position <= -50) {
-                cactus.element.remove();
+                if (cactus.element && cactus.element.parentNode) {
+                    cactus.element.remove();
+                }
                 this.cacti.splice(i, 1);
                 score += 1;
                 scoreElement.textContent = `Score: ${score}`;
+                continue;
             }
 
             // Collision detection
@@ -165,9 +222,15 @@ class CactusManager {
 const cactusManager = new CactusManager();
 
 function moveCactus() {
-    const move = setInterval(() => {
+    // Clear any existing interval
+    if (window.gameLoop) {
+        clearInterval(window.gameLoop);
+    }
+
+    // Create new interval
+    window.gameLoop = setInterval(() => {
         if (isGameOver) {
-            clearInterval(move);
+            clearInterval(window.gameLoop);
             return;
         }
         cactusManager.update();
@@ -187,6 +250,8 @@ function resetGame() {
         scoreElement.textContent = 'Score: 0';
         gameOverElement.classList.add('hidden');
         cactusManager.reset();
+        
+        // Make sure to start a new game loop
         moveCactus();
     }
 }
