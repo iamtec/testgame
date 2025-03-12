@@ -34,8 +34,8 @@
 
 @keyframes jump {
     0% { transform: translateY(0); }
-    40% { transform: translateY(-120px); }
-    60% { transform: translateY(-120px); }
+    40% { transform: translateY(var(--jump-height, -120px)); }
+    60% { transform: translateY(var(--jump-height, -120px)); }
     100% { transform: translateY(0); }
 }
 
@@ -60,4 +60,14 @@
 
 .hidden {
     display: none;
+}
+
+.cactus {
+    width: 30px;
+    height: 50px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: url('assets/cactus.png') no-repeat center;
+    background-size: contain;
 } 
