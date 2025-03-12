@@ -7,6 +7,7 @@
     overflow: hidden;
     background-color: #f7f7f7;
     border-bottom: 2px solid #535353;
+    touch-action: manipulation; /* Prevent double-tap zoom on mobile */
 }
 
 #dino {
@@ -74,4 +75,168 @@
     position: absolute;
     bottom: 0;
     right: 0;
+}
+
+@keyframes psychedelic {
+    0% { 
+        filter: hue-rotate(0deg) brightness(1) contrast(1);
+        transform: scale(1) skew(0deg);
+    }
+    25% { 
+        filter: hue-rotate(90deg) brightness(1.5) contrast(1.5);
+        transform: scale(1.2) skew(5deg);
+    }
+    50% { 
+        filter: hue-rotate(180deg) brightness(2) contrast(2);
+        transform: scale(1.4) skew(-5deg);
+    }
+    75% { 
+        filter: hue-rotate(270deg) brightness(1.5) contrast(1.5);
+        transform: scale(1.2) skew(5deg);
+    }
+    100% { 
+        filter: hue-rotate(360deg) brightness(1) contrast(1);
+        transform: scale(1) skew(0deg);
+    }
+}
+
+@keyframes spinAround {
+    from { transform: rotate(0deg) translate(100px) rotate(0deg); }
+    to { transform: rotate(360deg) translate(100px) rotate(-360deg); }
+}
+
+.victory {
+    animation: psychedelic 0.3s linear infinite;
+}
+
+.victory #dino {
+    animation: spinAround 1s linear infinite !important;
+}
+
+.explosion {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, 
+        #ff0000, #ff8800, #ffff00, 
+        #00ff00, #0000ff, #ff00ff);
+    opacity: 0;
+    transition: all 0.5s ease-out;
+    mix-blend-mode: overlay;
+}
+
+.explosion.active {
+    width: 800px;
+    height: 800px;
+    opacity: 0.9;
+    animation: explode 2s ease-out infinite;
+}
+
+@keyframes explode {
+    0% { transform: translate(-50%, -50%) scale(0.8) rotate(0deg); }
+    50% { transform: translate(-50%, -50%) scale(1.2) rotate(180deg); }
+    100% { transform: translate(-50%, -50%) scale(0.8) rotate(360deg); }
+}
+
+.mini-explosion {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    pointer-events: none;
+}
+
+/* Add ground pattern container */
+.ground-pattern {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    overflow: hidden;
+}
+
+/* Make ground pattern move */
+.ground-pattern svg {
+    position: absolute;
+    bottom: 0;
+    animation: moveGround 1.5s linear infinite;
+    width: 200%; /* Make SVG wider */
+}
+
+/* Stop ground animation when game is over or victory */
+.game-over .ground-pattern svg,
+.victory .ground-pattern svg {
+    animation-play-state: paused;
+}
+
+@keyframes moveGround {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+.win-text {
+    position: absolute;
+    font-family: "Comic Sans MS", cursive;
+    font-size: 36px;
+    font-weight: bold;
+    pointer-events: none;
+    transition: all 0.5s ease-out;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.game-over.win {
+    font-family: "Comic Sans MS", cursive;
+    font-size: 32px;
+    animation: rainbow 2s linear infinite;
+}
+
+@keyframes rainbow {
+    0% { color: red; }
+    17% { color: orange; }
+    33% { color: yellow; }
+    50% { color: green; }
+    67% { color: blue; }
+    83% { color: indigo; }
+    100% { color: violet; }
+}
+
+/* Start message styling */
+#start-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    z-index: 100;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 600px) {
+    #game {
+        width: 100%;
+        height: 180px;
+    }
+
+    .win-text {
+        font-size: 24px;
+    }
+
+    #game-over, #start-message {
+        font-size: 20px;
+        padding: 15px;
+        width: 80%;
+        max-width: 300px;
+    }
 } 
